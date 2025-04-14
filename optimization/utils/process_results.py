@@ -38,10 +38,12 @@ def get_t_max_reward(log_file, max_reward):
 # results_dir = "./results/v4_unit/naive_21/"
 # results_dir = "./results/v4_cbws/naive_21/"
 # results_dir = "./results/v4_cb/naive_21/duration/"
-results_dir = "./results/v4_cb/naive_21/peak/"
+# results_dir = "./results/v4_cb/naive_21/peak/"
+results_dir = "./results/v4_cb/rnd_large_3/"
 
 
-v5_results_dir = "./results/v5/naive_21/"
+# v5_results_dir = "./results/v5/naive_21/"
+v5_results_dir = "./results/v5/rnd_large_3/"
 
 table_data = []
 
@@ -52,12 +54,11 @@ for file in sorted(os.listdir(results_dir)):
             data = json.load(f)
             match = re.search(r'(\d{4}-\d{2}-\d{2})[^_]*_(\w+)\.json$', file)
 
+            name = file.replace(".json", "")
             if match:
                 date = match.group(1)
                 last_word = is_mapping[match.group(2)]
-            else:
-                date = "unknown"
-                last_word = "unknown"
+                name = f"{date}_{last_word}"
 
             max_reward = int(data["abs_demands_total"])
 
@@ -74,7 +75,7 @@ for file in sorted(os.listdir(results_dir)):
             t_first, makespan_first = get_t_max_reward(log_file, max_reward)
             makespan_first_gap = ((makespan_first - makespan_lb) / makespan_lb) * 100
 
-            table_data.append([f"{date}_{last_word}", max_reward, makespan_lb, reward, reward_rel, makespan, makespan_gap, t_first, makespan_first_gap])
+            table_data.append([name, max_reward, makespan_lb, reward, reward_rel, makespan, makespan_gap, t_first, makespan_first_gap])
 
 # Calculate averages for each column
 averages = ["mean"]

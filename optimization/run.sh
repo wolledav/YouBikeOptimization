@@ -54,10 +54,10 @@
 
 
 
-INSTANCE_DIR="./data/instances_v4/rnd_large_2/"
+INSTANCE_DIR="./data/instances_v4/rnd_large_3/"
 
 # Generate cb solutions for all instances
-OUTPUT="./results/v4_cb/rnd_large_2/"
+OUTPUT="./results/v4_cb/rnd_large_3/"
 SCRIPT="./optimization/models/rebalance_unit.py"
 TIMEOUT=3600
 
@@ -67,7 +67,7 @@ for INSTANCE in "$INSTANCE_DIR"*.json; do
 done
 
 # Generate v5 solutions for all instances
-OUTPUT="./results/v5/rnd_large/"
+OUTPUT="./results/v5/rnd_large_3/"
 SCRIPT="./optimization/models/rebalance_v5.py"
 TIMEOUT=3600
 

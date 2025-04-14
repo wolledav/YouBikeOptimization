@@ -3,7 +3,7 @@
 import json
 import os
 
-master_instance = "data/instances_v4/v12-24-24_b8h_d12.json"
+master_instance = "data/instances_v4/naive_21/naive_2024-12-28_duration.json"
 
 
 # 1) GENERATE DISTRICT-WISE SUBPROBLEMS

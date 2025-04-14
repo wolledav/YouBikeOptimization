@@ -2,9 +2,16 @@ import pandas as pd
 import numpy as np
 import json
 import os
+import sys
 from DBIO import YouBikeDataManager
 from config import cfg
-from demand_prediction import DemandPredictionContext, NaiveDemandPredictionStrategy, ProphetDemandPredictionStrategy
+from demand_prediction import DemandPredictionContext, \
+                              NaiveDemandPredictionStrategy, \
+                              ProphetDemandPredictionStrategy, \
+                              WeeklyAverageDemandPredictionStrategy, \
+                              GroundTruthDemandPredictionStrategy
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from optimization.utils.inventory_policies import min_P_max_policy, min_Q_total_policy
 
 # ---------------------------------------
 # Configuration
@@ -33,8 +40,13 @@ if cfg.prediction_strategy == "prophet":
     context = DemandPredictionContext(ProphetDemandPredictionStrategy(data_manager))
 elif cfg.prediction_strategy == "naive":
     context = DemandPredictionContext(NaiveDemandPredictionStrategy(data_manager))
+elif cfg.prediction_strategy == "weekly":
+    context = DemandPredictionContext(WeeklyAverageDemandPredictionStrategy(data_manager))
 else:
     raise ValueError(f"Invalid prediction strategy: {cfg.prediction_strategy}")
+
+# Create a separate context for ground truth data
+ground_truth_context = DemandPredictionContext(GroundTruthDemandPredictionStrategy(data_manager))
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -45,17 +57,6 @@ class NumpyEncoder(json.JSONEncoder):
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
         return super(NumpyEncoder, self).default(obj)
-
-
-def find_optimal_starting_point(hourly_demands, station_capacity):
-    max_demand = max(hourly_demands)
-    min_demand = min(hourly_demands)
-    range_demand = max_demand - min_demand
-    if range_demand == 0:
-        s_goal = station_capacity / 2
-    else:
-        s_goal = station_capacity/range_demand*max_demand
-    return int(s_goal)
 
 
 def simulate_inventory(hourly_demands, station_capacity, starting_inventory):
@@ -74,20 +75,6 @@ def simulate_inventory(hourly_demands, station_capacity, starting_inventory):
             shortage_count += 1
 
     return overflow_count, shortage_count
-
-def find_optimal_starting_point_2(hourly_demands, station_capacity, w_overflow=1, w_shortage=1):
-    best_inventory = 0
-    best_loss = float('inf')
-
-    for inventory in range(station_capacity + 1):
-        overflow_count, shortage_count = simulate_inventory(hourly_demands, station_capacity, inventory)
-        loss = w_overflow * overflow_count + w_shortage * shortage_count
-
-        if loss < best_loss:
-            best_loss = loss
-            best_inventory = inventory
-
-    return best_inventory, best_loss
 
 
 def get_station_capacity(df, sno, default_capacity=10):
@@ -121,23 +108,28 @@ total_bikes = sum([data_manager.get_station_available_bikes_at_time(sno, cfg.ins
 total_capacity = sum([get_station_capacity(df_stations, sno) for sno in df_distances.columns])
 for sno in df_distances.columns:
     hourly_demands = context.predict_demand(station_id=sno, forecast_date=cfg.instance_start)
+    real_demands = ground_truth_context.predict_demand(station_id=sno, forecast_date=cfg.instance_start)
     cap = get_station_capacity(df_stations, sno)
     s_init = data_manager.get_station_available_bikes_at_time(sno, cfg.instance_start)
-    if cfg.inventory_strategy == "peak":
-        s_goal = find_optimal_starting_point(hourly_demands, cap)
-    elif cfg.inventory_strategy == "duration":
-        s_goal, _ = find_optimal_starting_point_2(hourly_demands, cap)
+    if cfg.inventory_strategy == "min_peak":
+        s_goal = min_P_max_policy(hourly_demands, cap)
+        s_goal_real = min_P_max_policy(real_demands, cap)
     elif cfg.inventory_strategy == "nochange":
         s_goal = s_init
+        s_goal_real = s_init
     elif cfg.inventory_strategy == "proportional":
         s_goal = int((cap / total_capacity) * total_bikes)
+        s_goal_real = s_goal
+    elif cfg.inventory_strategy == "min_total":
+        s_goal = min_Q_total_policy(hourly_demands, cap)
+        s_goal_real = min_Q_total_policy(real_demands, cap)
     else:
         print(f"Invalid inventory strategy: {cfg.inventory_strategy}")
     # get intial
     # we need to calculate the 8 hour interval wich is best for rebalancing
     # assuming that we rebalance from 00:00 to 08:00
 
-    optimal_allocation[sno] = (s_init, s_goal)
+    optimal_allocation[sno] = (s_init, s_goal, s_goal_real)
 
 total_s_init = sum([optimal_allocation[sno][0] for sno in df_distances.columns])
 total_s_goal = sum([optimal_allocation[sno][1] for sno in df_distances.columns])
@@ -151,7 +143,8 @@ if total_s_goal != total_s_init:
                 break
             adjustment = np.sign(discrepancy)
             optimal_allocation[sno] = (optimal_allocation[sno][0],
-                                       optimal_allocation[sno][1] + adjustment)
+                                       optimal_allocation[sno][1] + adjustment,
+                                       optimal_allocation[sno][2])
             discrepancy -= adjustment
 
 # Generate instance data
@@ -166,6 +159,9 @@ for i, sno in enumerate(df_distances.columns):
         "district": row['sareaen'].values[0],
         "s_init": int(optimal_allocation[sno][0]),
         "s_goal": int(optimal_allocation[sno][1]),
+        "real_s_goal": int(optimal_allocation[sno][2]),
+        "demand": context.predict_demand(station_id=sno, forecast_date=cfg.instance_start),
+        "real_demand": ground_truth_context.predict_demand(station_id=sno, forecast_date=cfg.instance_start),
         "coords": [row['latitude'].values[0], row['longitude'].values[0]],
     }
     stations.append(station)

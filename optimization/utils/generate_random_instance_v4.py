@@ -6,22 +6,24 @@ import json
 import sys
 
 
-CNTS = [12500, 15000, 17500, 20000]
+CNTS = [2000, 4000, 6000, 8000, 10000, 12000]
+# CNTS = [2000]
 CAPACITIES = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100]
 PARKING_TIME = 120
 LOADING_TIME = 60
-MAX_TRIP_TIME = 60 * 60 * 8
+MAX_TRIP_TIME = 60 * 60 * 10
 MAX_COORD = 1000
+VEH_PER_DEPOT = 5
 
 for STATIONS_CNT in CNTS:
     DEPOTS_CNT = STATIONS_CNT // 100
-    VEHICLES_CNT = 4 * DEPOTS_CNT
+    VEHICLES_CNT = VEH_PER_DEPOT * DEPOTS_CNT
 
     # Fill VEHICLES_CAPACITY alternately with 12 and 24
     VEHICLES_CAPACITY = [12 if i % 2 == 0 else 24 for i in range(VEHICLES_CNT)]
 
     # Fill VEHICLES_DEPOTS with numbers from 0 to DEPOTS_CNT, each appearing four times
-    VEHICLES_DEPOTS = [i for i in range(DEPOTS_CNT) for _ in range(4)]
+    VEHICLES_DEPOTS = [i for i in range(DEPOTS_CNT) for _ in range(VEH_PER_DEPOT)]
 
     s_init_sum = 0
     s_goal_sum = 0
@@ -123,7 +125,7 @@ for STATIONS_CNT in CNTS:
     data_string = json.dumps(data, indent=None)
     # print(data_string)
 
-    output_path = "./data/instances_v4/rnd_large_2/" + str(STATIONS_CNT) + "_v" + str(VEHICLES_CNT) + "_d" + str(DEPOTS_CNT) + ".json"
+    output_path = "./data/instances_v4/rnd_large_3/" + str(STATIONS_CNT) + "_v" + str(VEHICLES_CNT) + "_d" + str(DEPOTS_CNT) + ".json"
 
     with open(output_path, "w") as outfile:
         outfile.write(data_string)

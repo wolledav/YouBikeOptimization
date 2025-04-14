@@ -109,7 +109,8 @@ def generate_instance_v4(base_instance_path, output_path):
     constants = { # in seconds
         "parking_time": 120,
         "loading_time":60, 
-        "max_trip_duration": 8 * 60 * 60
+        "max_trip_duration": 8 * 60 * 60,
+        "demand_timestep": 300
     }
 
     # EXPORT
@@ -130,7 +131,7 @@ def generate_instance_v4(base_instance_path, output_path):
 
 if __name__ == "__main__":
     input_dir = "./data/instances/"
-    output_dir = "./data/instances_v4/naive_21/"
+    output_dir = "./data/instances_v4/naive_21_demand/"
     prefix = "naive"
 
     instances = os.listdir(input_dir)
@@ -150,3 +151,4 @@ if __name__ == "__main__":
                 print(output_path)
                 generate_instance_v4(base_instance_path, output_path)
                 print("\n")
+        exit
