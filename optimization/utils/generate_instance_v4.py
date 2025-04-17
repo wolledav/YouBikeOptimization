@@ -29,7 +29,7 @@ def generate_instance_v4(base_instance_path, output_path):
 
     for station in stations:
         station["c_reward"] = 1
-        station["s_goal"] = int(rel_occupancy * station["capacity"])
+        # station["s_goal"] = int(rel_occupancy * station["capacity"])
     s_goal_sum = sum([station["s_goal"] for station in stations])
 
     while s_goal_sum < s_init_sum:
@@ -37,6 +37,13 @@ def generate_instance_v4(base_instance_path, output_path):
         if station["s_goal"] < station["capacity"]:
             station["s_goal"] += 1
             s_goal_sum += 1
+
+    while s_goal_sum > s_init_sum:
+        station = np.random.choice(stations)
+        if station["s_goal"] > 0:
+            station["s_goal"] -= 1
+            s_goal_sum -= 1
+
 
     demand_sum = sum([station["s_goal"] - station["s_init"] for station in stations])
     demand_sum_abs = sum([abs(station["s_goal"] - station["s_init"]) for station in stations])
@@ -130,9 +137,15 @@ def generate_instance_v4(base_instance_path, output_path):
         print("Exported instance", output_path)
 
 if __name__ == "__main__":
+    input_dir = "./data/instances/weekly_nochange/"
+    output_dir = "./data/instances_v4/weekly_nochange/"
+    prefix = "weekly"
+
     input_dir = "./data/instances/weekly/"
     output_dir = "./data/instances_v4/weekly_21/"
     prefix = "weekly"
+
+
 
     instances = os.listdir(input_dir)
     for instance in instances:
