@@ -6,23 +6,28 @@ import numpy as np
 import re
 
 from inventory_policies import *
+from tabulate import tabulate
+
 
 is_mapping = {"proportional": "prop",
               "min_total": "Q_total",
+              "min_peak": "P_mean",
+              "nochange": "no_change"
         }
 
-
-# instance = "data/instances_v4/weekly_21/weekly_2025-03-24_proportional.json"
 
 instances_dir = "data/instances_v4/weekly_21/"
 policy = "proportional"
 policy = "min_total"
+policy = "min_peak"
+
+instances_dir = "data/instances_v4/weekly_nochange/"
+policy = "nochange"
 
 instances = os.listdir(instances_dir)
 
 table_data = []
 
-print("name\t\t\ttotal_demand\tideal_P_mean\tideal_Q_total\treal_P_mean\treal_Q_total")
 
 for instance in sorted(instances):
     if policy in instance and "unit" not in instance:
@@ -73,7 +78,30 @@ for instance in sorted(instances):
             date = match.group(1)
             last_word = is_mapping[match.group(2)]
             name = f"{date}_{last_word}"
+        table_data.append([name, real_demand_sum, ideal_P_mean, ideal_Q_total, real_P_mean, real_Q_total])
+        # print(f"{name}\t{real_demand_sum}\t\t{ideal_P_mean:.2f}\t\t{ideal_Q_total:.2f}\t\t{real_P_mean:.2f}\t\t{real_Q_total:.2f}")
+
+# Calculate averages for each column
+averages = ["mean"]
+for col in range(1, len(table_data[0])):
+    col_values = [row[col] for row in table_data if not np.isnan(row[col])]
+    averages.append(np.mean(col_values))
+
+# Append averages to table_data
+table_data.append(averages)
+
+# 
+if policy == "nochange":
+    for row in table_data:
+        row[4] = 'nan'
+        row[5] = 'nan'
+
+# Generate LaTeX table with int and float formats
+headers = ["Instance", "Total Demand", "Ideal P mean", "Ideal Q total", "Real P mean", "Real Q total"]
+floatfmts = (".0f", ".0f", ".2f", ".2f", ".2f", ".2f")
+latex_table = tabulate(table_data, headers, tablefmt="latex", floatfmt=floatfmts)
+
+# Print LaTeX table
+print(latex_table)
 
 
-        # table_data.append([name, demand_sum, real_P_mean, Q_rel_percent])
-        print(f"{name}\t{real_demand_sum}\t\t{ideal_P_mean:.2f}\t\t{ideal_Q_total:.2f}\t\t{real_P_mean:.2f}\t\t{real_Q_total:.2f}")
