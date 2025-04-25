@@ -8,8 +8,8 @@ import numpy as np
 
 
 is_mapping = {"proportional": "prop",
-              "duration": "dur",
-              "peak": "peak"
+              "min_total": "total",
+              "min_peak": "peak"
               }
 
 
@@ -34,16 +34,16 @@ def get_t_max_reward(log_file, max_reward):
                     return t, makespan
     return float('nan'), float('nan')
 
-# results_dir = "./results/v4_cb/naive_21/proportional/"
+results_dir = "./results/v4_cb/weekly_21/"
 # results_dir = "./results/v4_unit/naive_21/"
 # results_dir = "./results/v4_cbws/naive_21/"
 # results_dir = "./results/v4_cb/naive_21/duration/"
 # results_dir = "./results/v4_cb/naive_21/peak/"
-results_dir = "./results/v4_cb/rnd_large_3/"
+# results_dir = "./results/v4_cb/rnd_large_3/"
 
 
-# v5_results_dir = "./results/v5/naive_21/"
-v5_results_dir = "./results/v5/rnd_large_3/"
+v5_results_dir = "./results/v5/weekly_21/"
+# v5_results_dir = "./results/v5/rnd_large_3/"
 
 table_data = []
 
