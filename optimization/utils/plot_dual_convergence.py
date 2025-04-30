@@ -4,18 +4,18 @@ import re
 import matplotlib.pyplot as plt
 import json
 
-logfile = "./results/v4_cb/naive_21/proportional/naive_2024-12-29_proportional.txt"
-name = "naive_2024-12-29_prop"
+logfile = "./results/v4_cb/weekly_21/proportional/weekly_2025-03-30_proportional.txt"
+name = "weekly_2025-03-30_prop"
 
-logfile = "./results/v4_unit/naive_21/naive_2024-12-29_proportional.txt"
-name = "naive_2024-12-29_prop"
+logfile = "./results/v4_unit/weekly_21/weekly_2025-03-30_proportional.txt"
+name = "weekly_2025-03-30_prop"
 
-logfile = "./results/v4_cbws/naive_21/naive_2024-12-29_proportional.txt"
-name = "naive_2024-12-29_prop"
+logfile = "./results/v4_cbws/weekly_21/weekly_2025-03-30_proportional.txt"
+name = "weekly_2025-03-30_prop"
 
 
 instance = logfile.split("/")[-1]
-logfile_LB = "./results/v5/naive_21/" + instance.replace(".txt", ".json")
+logfile_LB = "./results/v5/weekly_21/" + instance.replace(".txt", ".json")
 
 with open(logfile_LB, "r") as f:
     data = json.load(f)

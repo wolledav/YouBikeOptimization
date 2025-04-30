@@ -18,11 +18,11 @@ is_mapping = {"proportional": "prop",
 
 instances_dir = "data/instances_v4/weekly_21/"
 policy = "proportional"
-policy = "min_total"
-policy = "min_peak"
+# policy = "min_total"
+# policy = "min_peak"
 
-instances_dir = "data/instances_v4/weekly_nochange/"
-policy = "nochange"
+# instances_dir = "data/instances_v4/weekly_nochange/"
+# policy = "nochange"
 
 instances = os.listdir(instances_dir)
 
@@ -65,12 +65,12 @@ for instance in sorted(instances):
             real_demand_sum = sum(real_demand_abs)
             real_demand_sums.append(real_demand_sum)
 
-        real_demand_sum = sum(real_demand_sums)
+        real_total_demand_sum = sum(real_demand_sums)
 
         real_P_mean = np.mean(real_P_max_vals)
-        real_Q_total = 100 * (1 - sum(real_Q_total_vals) / real_demand_sum)
+        real_Q_total = 100 * (1 - sum(real_Q_total_vals) / real_total_demand_sum)
         ideal_P_mean = np.mean(ideal_P_max_vals)
-        ideal_Q_total = 100 * (1 - sum(ideal_Q_total_vals) / real_demand_sum)
+        ideal_Q_total = 100 * (1 - sum(ideal_Q_total_vals) / real_total_demand_sum)
 
         match = re.search(r'(\d{4}-\d{2}-\d{2})[^_]*_(\w+)\.json$', instance)
         name = instance.replace(".json", "")
@@ -78,7 +78,7 @@ for instance in sorted(instances):
             date = match.group(1)
             last_word = is_mapping[match.group(2)]
             name = f"{date}_{last_word}"
-        table_data.append([name, real_demand_sum, ideal_P_mean, ideal_Q_total, real_P_mean, real_Q_total])
+        table_data.append([name, real_total_demand_sum, ideal_P_mean, ideal_Q_total, real_P_mean, real_Q_total])
         # print(f"{name}\t{real_demand_sum}\t\t{ideal_P_mean:.2f}\t\t{ideal_Q_total:.2f}\t\t{real_P_mean:.2f}\t\t{real_Q_total:.2f}")
 
 # Calculate averages for each column
