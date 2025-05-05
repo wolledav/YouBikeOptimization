@@ -2,6 +2,15 @@
 
 import numpy as np
 
+def get_inventories_w_unloading(demands, s_init, s_cap, unloadings):
+    n = len(demands)
+    inventories = np.zeros(n + 1, dtype=int)
+    inventories[0] = s_init
+    for t in range(1, n + 1):
+        inventories[t] = min(max(0, inventories[t-1] + demands[t-1] + unloadings[t]), s_cap)
+    return 0
+
+
 def get_inventories(demands, s_init, s_cap):
     n = len(demands)
     inventories = np.zeros(n + 1, dtype=int)
