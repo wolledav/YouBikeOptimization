@@ -8,7 +8,7 @@ def get_inventories_w_unloading(demands, s_init, s_cap, unloadings):
     inventories[0] = s_init
     for t in range(1, n + 1):
         inventories[t] = min(max(0, inventories[t-1] + demands[t-1] + unloadings[t]), s_cap)
-    return 0
+    return inventories
 
 
 def get_inventories(demands, s_init, s_cap):
